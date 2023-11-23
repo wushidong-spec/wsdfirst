@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>五子棋1.0</title>
+    <style>
+	    .titlestyle{
+		    background:#fff;
+			margin-top:30;
+			text-align:center;
+			background-image:url("1.gif");
+		}
+        .sx{
+	    	background: #fff;
+			cursor: pointer;
+            margin-top: 80px;
+			margin-left:540px;
+			border:2px solid black
+        }
+		body{
+		   background-image:url("1.gif");
+		}
+    </style>
+</head>
+<body>
+    <h1 class="titlestyle">五子棋1.0</h1>
+    <canvas id="canvas" width="450" height="450" class="sx" onmousemove="luozi(event)" onclick="luozi2()"></canvas> 
+    <script>
+	   var currentscore=0;
+	   var currentsum=0;
+	   var isend=false;
+	   var Pan = false;
+       var change = false;
+       var ispointsave=false;
+	   var number = -1, colorindex = 0;
+	   var x=0,y=0,lastx=-100,lasty=-100;
+	   var isblack=true,ceshi=false; 
+	    var record =  { 
+          x:Array(256), 
+          y: Array(256),
+          isblack: Array(256),
+          ishasqizi: Array(256),
+} 
+	   function drawqipan(){
+		var canvas = document.getElementById('canvas');
+        // 获取canvas绘图环境
+        var context = canvas.getContext('2d');
+        for(var i=0;i<=15;i++)
+		{
+			context.moveTo(0,30*(i)+0.5);
+			context.lineTo(450,30*(i)+0.5);
+			}
+		for(var i=0;i<=15;i++)
+		{
+			context.moveTo(30*(i)+0.5,0);
+			context.lineTo(30*(i)+0.5,450);
+			}
+			 context.strokeStyle="#000000";
+			context.lineWidth=1
+			context.stroke();
+		}
+       var FenZhi={
+		HUOWU:1000000,
+        HUOSI:100000,
+        BANSI: 20000,
+        SISI: 10000,
+        HUOSAN: 20000,
+        BANSAN: 3000,
+        SISAN: 1000,
+        HUOER: 2500,
+        BANER: 200,
+        SIER: 50,
+        SLEEPYI: 80,
+        BANYI:10,
+        SIYI: 2,
+       };
+	   var rect1=function(x,y){
+		   this.x=x;
+		   this.y=y;
+	   }
+	   var psave=function(x,y){
+		   this.x=x;
+		   this.y=y;
+	   }
+       var record2={
+		  x:Array(256),
+		  y:Array(256),
+		  ishasqizi:Array(256),
+		  score:Array(256),
+       }
+	   function Initaillocate()
+{
+	var j = 0;
+	var avg = 0, avg1 = 0;
+	for (var i = 0; i < 256; i++)
+	{
+		var temprect=function(x,y){
+			this.x=x;
+			this.y=y;
+		};
+		temprect.x=0;
+		temprect.y=0;
+		if(j>=16){
+			avg1 += 30;
+			j = 0;
+			temprect.x = 0;
+			avg = 0;
+		}
+		record2.x[i] = temprect.x+avg;
+		record2.y[i] = temprect.y+avg1;
+		record2.score[i]=0;
+		record2.ishasqizi[i] = false;
+		avg += 30;
+		j++;
+	}
+}
+     Initaillocate();
+		function Ishasqizi2(x,y)
+{
+	for (var i = 0; i <= currentsum; i++)
+	{
+		if (x == record.x[i]&&y == record.y[i])
+		{
+			if (true) {
+				number = i;
+				if (record.isblack[i])
+					colorindex = 1;
+				else
+				{
+					colorindex = 2;
+				}
+			}
+			return true;
+		}
+		else
+		{
+			continue;
+		}
+	}
+	return false;
+}
+		function huitui(lastx1,lasty1)
+		{
+			var canvas3=document.getElementById('canvas');
+			var context3=canvas3.getContext('2d');
+			context3.beginPath();
+            context3.moveTo(lastx1-11,lasty1+0.5);
+			context3.lineTo(lastx1+11,lasty1+0.5);
+			context3.moveTo(lastx1+0.5,lasty-11);
+			context3.lineTo(lastx1+0.5,lasty+11);
+			context3.strokeStyle="#000000";
+			context3.stroke();
+			context3.closePath();
+		}
+		function Ishasqizi(locatx,locaty)
+		{
+			for(var i=0;i<=currentsum;i++)
+			{
+				if(record.x[i]==locatx&&record.y[i]==locaty)
+				return true;
+			}
+			return false;
+		}
+		function luozi(e)
+		{
+			if(!isend){
+			x=e.clientX;
+			y=e.clientY;
+			var istrue=false;
+			var x1=-50,y1=-50;
+			var queshi=false;
+			var canvas3=document.getElementById('canvas');
+			var context3=canvas3.getContext('2d');
+			if(!Ishasqizi(lastx,lasty)){
+			if(((x-548)%30<=30/2-2)&&((y-164)%30<=13)){
+			context3.clearRect(lastx-11,lasty-11,22,22);
+			huitui(lastx,lasty);
+			lastx=x-548-(x-548)%30;
+			lasty=y-164-(y-164)%30;
+			istrue=true;
+			}
+			if(((x-548)%30<=30/2-2)&&((y-164)%30>=17)){
+			context3.clearRect(lastx-11,lasty-11,22,22);
+			huitui(lastx,lasty);
+			lastx=x-548-(x-548)%30;
+			lasty=y-164-(y-164)%30+30;
+	        istrue=true;
+			}
+			if(((x-548)%30>=30/2-2)&&((y-164)%30<13)){
+				context3.clearRect(lastx-11,lasty-11,22,22);
+				huitui(lastx,lasty);
+			lastx=x-548-(x-548)%30+30;
+			lasty=y-164-(y-164)%30;
+			istrue=true;
+			}
+			if(((x-548)%30>=30/2+2)&&((y-164)%30>=178)){
+				context3.clearRect(lastx-11,lasty-11,22,22);
+				huitui(lastx,lasty);
+			istrue=true;
+			lastx=x-548-(x-548)%30+30;
+			lasty=y-164-(y-164)%30+30;
+			}
+			if(istrue){
+			context3.beginPath();
+			context3.arc(lastx,lasty,10,0,2*Math.PI);
+            context3.strokeStyle="#ff0000";
+            context3.stroke();
+			context3.closePath();
+			}
+			}
+			else{
+				lastx=-100;
+				lasty=-100;
+			}
+			document.getElementById("xycoordinates").innerHTML="Coordinates: (" + record.x[currentsum-1]+ "," + record.y[currentsum-1] + ")";
+		  }
+		}
+		 function cnvs_clearCoordinates()
+ {
+ document.getElementById("xycoordinates").innerHTML="";
+ }
+ function Setqizi(x ,y, span)
+{
+	for (var i = 0; i < 256; i++)
+	{
+		if (record2.x[i] == x&&record2.y[i]==y&&span)
+		{
+			record2.ishasqizi[i] = true;
+			break;
+		}
+		if (record2.x[i] == x&&record2.y[i]==y && !span)
+		{
+			record2.ishasqizi[i] = false;
+			break;
+		}
+	}
+}    
+        function getexaloc(x2,y2){
+	        var x1=x2,y1=y2;
+	        if(((x-548)%30<=30/2-2)&&((y-164)%30<=13)){
+				x1=x1-548-(x1-548)%30;
+				y1=y1-164-(y1-164)%30;
+	        }
+			if(((x-548)%30<=30/2-2)&&((y-164)%30>=17)){
+				x1=x1-548-(x1-548)%30;
+				y1=y1-164-(y1-164)%30+30;
+			}
+			if(((x-548)%30>=30/2+2)&&((y-164)%30<13)){
+				x1=x1-548-(x1-548)%30+30;
+				y1=y1-164-(y1-164)%30;
+			}
+			if(((x-548)%30>=30/2+2)&&((y-164)%30>=17)){
+				x1=x1-548-(x1-548)%30+30;
+				y1=y1-164-(y1-164)%30+30;
+			}
+            var result=Ishasqizi(x1,y1);
+			return result;
+       }
+
+        function luozi2()
+		{
+			if(!isend){
+			var canvas2=document.getElementById('canvas');
+			var context2=canvas2.getContext('2d');
+			var istrue=false,ishasqizi=false;
+			context2.beginPath();
+		//	context2.arc(x-548,y-164,10,0,2*Math.PI);
+		    if(!getexaloc(x,y)){
+			if(((x-548)%30<=30/2-2)&&((y-164)%30<=13)){	
+			record.x[currentsum]=x-548-(x-548)%30;
+			record.y[currentsum]=y-164-(y-164)%30;
+			context2.arc(x-548-(x-548)%30,y-164-(y-164)%30,10,0,2*Math.PI);
+			istrue=true;
+			}
+			if(((x-548)%30<=30/2-2)&&((y-164)%30>=17)){
+			record.x[currentsum]=x-548-(x-548)%30;
+			record.y[currentsum]=y-164-(y-164)%30+30;
+			context2.arc(x-548-(x-548)%30,y-164-(y-164)%30+30,10,0,2*Math.PI);
+	        istrue=true;
+			}
+			if(((x-548)%30>=30/2+2)&&((y-164)%30<13)){
+			record.x[currentsum]=x-548-(x-548)%30+30;
+			record.y[currentsum]=y-164-(y-164)%30;
+			context2.arc(x-548-(x-548)%30+30,y-164-(y-164)%30,10,0,2*Math.PI);
+			istrue=true;
+			}
+			if(((x-548)%30>=30/2+2)&&((y-164)%30>=17)){
+			record.x[currentsum]=x-548-(x-548)%30+30;
+			record.y[currentsum]=y-164-(y-164)%30+30;
+			istrue=true;
+			context2.arc(x-548-(x-548)%30+30,y-164-(y-164)%30+30,10,0,2*Math.PI);
+			}
+			if(istrue){
+			record.ishasqizi[currentsum]=true;
+			
+            if(isblack){
+			record.isblack[currentsum]=true;
+			context2.strokeStyle="#000000";
+			context2.fillStyle="#000000";
+			}
+			else{
+				record.isblack[currentsum]=false;
+				context2.strokeStyle="gray";
+				context2.fillStyle="#ffffff";
+				}
+			context2.fill();
+			context2.stroke();
+			context2.closePath();
+			Setqizi(record.x[currentsum],record.y[currentsum],true);
+			currentsum++;
+			var flag = IsFive(record.x[currentsum-1],record.y[currentsum-1], true);
+			currentscore = 0;
+			var wpoint = BestReturn2(false);
+			context2.beginPath();
+			context2.arc(wpoint.x,wpoint.y,10,0,2*Math.PI);
+			context2.strokeStyle="gray";
+			context2.fillStyle="#ffffff";
+			context2.fill();
+            context2.stroke();
+			context2.closePath();
+			record.x[currentsum]=wpoint.x;
+			record.y[currentsum]=wpoint.y;
+			record.ishasqizi[currentsum]=true;
+			record.isblack[currentsum]=false;
+			Setqizi(wpoint.x,wpoint.y,true);
+			currentsum++;
+			var flag1=IsFive(wpoint.x,wpoint.y,false);
+			document.getElementById("xycoordinates1").innerHYML="当前:x,y"+wpoint.x+","+wpoint.y;
+			if(flag){
+				document.getElementById("xycoordinates1").innerHTML="黑棋胜";
+				isend=true;
+			}
+			if(flag1&&!flag){
+			    document.getElementById("xycoordinates1").innerHTML="白棋胜";
+			    isend=true;
+			}
+		  }
+		}
+	  }
+	}
+function BestReturn2(pan)
+{
+	var Best = 0;
+	var chazhi = -4000000,prochazhi=-4000000,j=0;
+	var lpoint=function(x,y){
+		this.x=x;
+		this.y=y;
+	};
+	var recordtemp={
+		 x:Array(256),
+		  y:Array(256),
+		  ishasqizi:Array(256),
+		  score:Array(256),
+	};
+	for(var k=0;k<256;k++)
+	{
+		recordtemp.x[k]=-10;
+		recordtemp.y[k]=-10;
+		recordtemp.ishasqizi[k]=false;
+		recordtemp.score[k]=-2000001;
+	}
+	for (var i = 0; i < 256; i++)
+	{
+		if (!record2.ishasqizi[i])
+		{
+			var flag = IsFive(record2.x[i],record2.y[i], pan);
+			Best = currentscore;
+			record.x[currentsum]= record2.x[i];
+			record.y[currentsum]=record2.y[i];
+			record.isblack[currentsum] = false;
+			record.ishasqizi[currentsum] = true;
+			currentsum++;
+			Setqizi(record2.x[i],record2.y[i],true);
+			BestReturn(true);
+			chazhi = Best - currentscore2;
+			if (chazhi >= prochazhi)
+			{
+				prochazhi = chazhi;
+				recordtemp.score[j] = chazhi;
+				recordtemp.x[j] = record2.x[i];
+				recordtemp.y[j]=record2.y[i];
+				recordtemp.ishasqizi[j] = true;
+				j++;
+			}
+			currentsum--;
+			record.x[currentsum] = -10
+			record.y[currentsum]=-10;
+			record.ishasqizi[currentsum] = false;
+			Setqizi(record2.x[i],record2.y[i], false);
+		}
+	}
+	var k = 0;
+	for (var i = --j; i >= 0; i--)
+	{
+		if (recordtemp.score[i] < prochazhi)
+		{
+			k = i;
+			break;
+		}
+	}
+	var temp=function(x,y){
+		this.x=x;
+		this.y=y;
+	};
+	temp.x = 1000;
+	temp.y = 1000;
+	for (var i = j; i > k; i--)
+	{
+		if (Math.abs(recordtemp.x[i] - 210) <= Math.abs(temp.x - 210) && Math.abs(recordtemp.y[i] - 210) <= Math.abs(temp.y - 210)){
+			temp.x = recordtemp.x[i];
+            temp.y=recordtemp.y[i];
+		 }
+	}
+	return temp;
+}
+function BestReturn(pan)
+{
+	var Best=0;
+	var lpoint=function(x,y){
+		this.x=x;
+		this.y=y;
+	};
+	var recordtemp={ 
+		  x:Array(256),
+		  y:Array(256),
+		  ishasqizi:Array(256),
+		  score:Array(256),};
+    for(var k=0;k<256;k++)
+	{
+		recordtemp.x[k]=-10;
+		recordtemp.y[k]=-10;
+		recordtemp.ishasqizi[k]=false;
+		recordtemp.score[k]=-2000001;
+	}
+	var j = 0;
+	for (var i = 0; i < 256; i++)
+	{
+		if (!record2.ishasqizi[i])
+		{
+			var flag=IsFive(record2.x[i],record2.y[i], pan);
+			if (Best <= currentscore) {
+				Best = currentscore;
+				lpoint.x = record2.x[i];
+				lpoint.y=record2.y[i];
+				recordtemp.score[j] = currentscore;
+				recordtemp.x[j] = record2.x[i];
+				recordtemp.y[j]=record2.y[i];
+				j++;
+			}
+		}
+	}
+	var k = 0;
+	for (var i = --j; i >=0; i--)
+	{
+		if (recordtemp.score[i] < Best)
+		{
+			k = i;
+			break;
+		}
+	}
+	var temp=function(x,y){
+		this.x=x;
+		this.y=y;
+	};
+	temp.x = 1000;
+	temp.y = 1000;
+	for (var i = j; i > k; i--)
+	{
+		if (Math.abs(recordtemp.x[i] - 210) <= Math.abs(temp.x - 210) && Math.abs(recordtemp.y[i] - 210) <= Math.abs(temp.y - 210)){
+			temp.x = recordtemp.x[i];
+	        temp.y=recordtemp.y[i];
+		}
+	}
+	currentscore2 = Best;
+	return temp;
+}
+function IsFive(x,y,isblack)
+{
+	var jilu=new Array(),isdiff2=new Array(),kk=0,jiji=0;
+	var pointone =function(x,y){
+		this.x=x;
+		this.y=y
+	};
+	pointone.x=x;
+	pointone.y=y;
+	var countsum = 1;
+	var isdiff = 0;
+	currentscore = 0;
+	for (var i = 0; i < 5; i++)
+	{
+		pointone.x = pointone.x - 30;
+		if (pointone.x < 0 || pointone.y < 0 || pointone.x>450 || pointone.y>450)
+			break;
+		number = -1,colorindex=0;
+		if (true) {
+			if (Ishasqizi2(pointone.x,pointone.y))
+			{
+				if (isblack&&colorindex == 1)
+					countsum++;
+				if (!isblack&&colorindex == 2)
+					countsum++;
+				if ((isblack&&colorindex == 2) || (!isblack&&colorindex == 1))
+				{
+					isdiff++;
+					break;
+				}
+				if (countsum == 5)
+					break;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	FinalScore(countsum, isdiff);
+	if (countsum == 5)
+		return true;
+	pointone.x = x;
+	pointone.y=y;
+	//countsum = 0;
+	for (var i = 0; i < 5; i++)
+	{
+		pointone.x = pointone.x + 30;
+		if (pointone.x < 0 || pointone.y <0 || pointone.x>450 || pointone.y>450)
+			break;
+		number = -1, colorindex = 0;
+		if (true) {
+			if (Ishasqizi2(pointone.x,pointone.y))
+			{
+				if (isblack&&colorindex == 1)
+					countsum++;
+				if (!isblack&&colorindex == 2)
+					countsum++;
+				if ((isblack&&colorindex == 2) || (!isblack&&colorindex == 1))
+				{
+					isdiff++;
+					break;
+				}
+				if (countsum == 5)
+					break;
+			}
+			else
+				break;
+		}
+	}
+	if(countsum>=3){
+	    jiji++;
+		jilu.push(countsum);
+		isdiff2.push(isdiff);
+	}
+	FinalScore(countsum, isdiff);
+	pointone.x = x;
+	pointone.y=y;
+	isdiff = 0;
+	if (countsum == 5)
+		return true;
+	countsum = 1;
+	for (var i = 0; i < 5; i++)
+	{
+		pointone.y = pointone.y - 30;
+		if (pointone.x < 0 || pointone.y <0|| pointone.x>450|| pointone.y>450)
+			break;
+		number = -1, colorindex = 0;
+		if (true) {
+			if (Ishasqizi2(pointone.x,pointone.y))
+			{
+				if (isblack&&colorindex == 1)
+					countsum++;
+				if (!isblack&&colorindex == 2)
+					countsum++;
+				if ((isblack&&colorindex == 2) || (!isblack&&colorindex == 1))
+				{
+					isdiff++;
+					break;
+				}
+				if (countsum == 5)
+					break;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	FinalScore(countsum, isdiff);
+	if (countsum == 5)
+		return true;
+	pointone.x = x;
+	pointone.y=y;
+	//countsum = 0;
+	for (var i = 0; i < 5; i++)
+	{
+		pointone.y = pointone.y + 30;
+		if (pointone.x < 0 || pointone.y < 0 || pointone.x>450 || pointone.y>450)
+			break;
+		number = -1, colorindex = 0;
+		if (true) {
+			if (Ishasqizi2(pointone.x,pointone.y))
+			{
+				if (isblack&&colorindex == 1)
+					countsum++;
+				if (!isblack&&colorindex == 2)
+					countsum++;
+				if ((isblack&&colorindex == 2) || (!isblack&&colorindex == 1))
+				{
+					isdiff++;
+					break;
+				}
+				if (countsum == 5)
+					break;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	if(countsum>=3){
+		jiji++;
+		jilu.push(countsum);
+		isdiff2.push(isdiff);
+	}
+	FinalScore(countsum, isdiff);
+	pointone.x = x;
+	pointone.y=y;
+	isdiff = 0;
+	if (countsum == 5)
+		return true;
+    countsum = 1;
+	for (var i = 0; i < 5; i++)
+	{
+		pointone.x = pointone.x - 30;
+		pointone.y = pointone.y - 30;
+		if (pointone.x < 0 || pointone.y < 0||pointone.x>450||pointone.y>450)
+			break;
+		number = -1, colorindex = 0;
+		if (true) {
+			if (Ishasqizi2(pointone.x,pointone.y))
+			{
+				if (isblack&&colorindex == 1)
+					countsum++;
+				if (!isblack&&colorindex == 2)
+					countsum++;
+				if ((isblack&&colorindex == 2) || (!isblack&&colorindex == 1))
+				{
+					isdiff++;
+					break;
+				}
+				if (countsum == 5)
+					break;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	FinalScore(countsum, isdiff);
+	if (countsum == 5)
+		return true;
+	pointone.x = x;
+	pointone.y=y;
+	//countsum = 0;
+	for (var i = 0; i < 5; i++)
+	{
+		pointone.x = pointone.x + 30;
+		pointone.y = pointone.y + 30;
+		if (pointone.x <0|| pointone.y < 0 || pointone.x>450 || pointone.y>450)
+			break;
+		number = -1, colorindex = 0;
+		if (true) {
+			if (Ishasqizi2(pointone.x,pointone.y))
+			{
+				if (isblack&&colorindex == 1)
+					countsum++;
+				if (!isblack&&colorindex == 2)
+					countsum++;
+				if ((isblack&&colorindex == 2) || (!isblack&&colorindex == 1))
+				{
+					isdiff++;
+					break;
+				}
+				if (countsum == 5)
+					break;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	if(countsum>=3){
+		jiji++;
+		jilu.push(countsum);
+		isdiff2.push(isdiff);
+	}
+	FinalScore(countsum, isdiff);
+	pointone.x = x;
+    pointone.y=y;
+	isdiff = 0;
+	if (countsum == 5)
+		return true;
+	countsum = 1;
+	for (var i = 0; i < 5; i++)
+	{
+		pointone.x = pointone.x - 30;
+		pointone.y = pointone.y + 30;
+		if (pointone.x < 0 || pointone.y < 0 || pointone.x>0 || pointone.y>0)
+			break;
+		number = -1, colorindex = 0;
+		if (true) {
+			if (Ishasqizi2(pointone.x,pointone.y))
+			{
+				if (isblack&&colorindex == 1)
+					countsum++;
+				if (!isblack&&colorindex == 2)
+					countsum++;
+				if ((isblack&&colorindex == 2) || (!isblack&&colorindex == 1))
+				{
+					isdiff++;
+					break;
+				}
+				if (countsum == 5)
+					break;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	FinalScore(countsum, isdiff);
+	if (countsum == 5)
+		return true;
+	pointone.x = x;
+	pointone.y=y;
+	for (var i = 0; i < 5; i++)
+	{
+		pointone.x = pointone.x + 30;
+		pointone.y = pointone.y - 30;
+		if (pointone.x < 0 || pointone.y < 0|| pointone.x>450 || pointone.y>450)
+			break;
+		number = -1, colorindex = 0;
+		if (true) {
+			if (Ishasqizi2(pointone.x,pointone.y))
+			{
+				if (isblack&&colorindex == 1)
+					countsum++;
+				if (!isblack&&colorindex == 2)
+					countsum++;
+				if ((isblack&&colorindex == 2) || (!isblack&&colorindex == 1))
+				{
+					isdiff++;
+					break;
+				}
+				if (countsum == 5)
+					break;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	if(countsum>=3){
+		jiji++;
+	   jilu.push(countsum);
+	   isdiff2.push(isdiff);
+	}
+	if(jiji==2){
+		var jilucount=isdiff2.length;
+	    if(jilucount==2&&isdiff2[0]==0&&isdiff2[1]==0)
+		currentscore+=100000;
+		if(jilucount==2&&isdiff2[0]==1&&isdiff2[1]==0)
+		currentscore+=50000;
+		if(jilucount==2&&isdiff2[0]==2&&isdiff2[1]==0)
+		currentscore+=15000;
+		if(jilucount==2&&isdiff2[0]==2&&isdiff2[1]==1)
+		currentscore+=3000;
+		if(jilucount==2&&isdiff2[0]==2&&isdiff2[1]==2)
+		currentscore+=1000;
+		if(jilucount==2&&isdiff2[0]==1&&isdiff2[1]==2)
+		currentscore+=3000;
+		if(jilucount==2&&isdiff2[0]==0&&isdiff2[1]==2)
+		currentscore+=15000;
+		if(jilucount==2&&isdiff2[0]==0&&isdiff2[1]==1)
+		currentscore+=50000;
+	}
+	FinalScore(countsum, isdiff);
+	if(countsum==5)
+	    return true;
+	else
+	{
+		return false;
+	}
+}
+		function FinalScore(countsum,isdiff) {
+	if (countsum == 1 && isdiff == 0)
+		currentscore += FenZhi.SLEEPYI;
+	if (countsum == 1 && isdiff == 1)
+		currentscore += FenZhi.BANYI;
+	if (countsum == 1 && isdiff == 2)
+		currentscore += FenZhi.SIYI;
+	if (countsum == 2 && isdiff == 0)
+		currentscore += FenZhi.HUOER;
+	if (countsum == 2 && isdiff == 1)
+		currentscore += FenZhi.BANER;
+	if (countsum == 2 && isdiff == 2)
+		currentscore += FenZhi.SIER;
+	if (countsum == 3 && isdiff == 0)
+		currentscore += FenZhi.HUOSAN;
+	if (countsum == 3 && isdiff == 1)
+		currentscore += FenZhi.BANSAN;
+	if (countsum == 3 && isdiff == 2)
+		currentscore += FenZhi.SISAN;
+	if (countsum == 4 && isdiff == 0)
+		currentscore += FenZhi.HUOSI;
+	if (countsum == 4 && isdiff == 1)
+		currentscore += FenZhi.BANSI;
+	if (countsum == 4 && isdiff == 2)
+		currentscore += FenZhi.SISI;
+	if (countsum == 5)
+		currentscore += FenZhi.HUOWU;
+}
+     drawqipan();
+    </script>
+	<div id="xycoordinates"></div>
+	<div id="xycoordinates1"></div>
+</body>
+</html>
