@@ -2,8 +2,7 @@
 #include "SThreadPool.h"
 #include <tuple>
 #include <utility>
-#include "SRPCServer.h"
-
+#include "SRpcNetwork.h"
 struct Test{
     int a;
     std::string str;
@@ -104,13 +103,12 @@ public:
 };
 int main() {
     TestSeri tt;
-    std::unique_ptr<int> ptr= std::make_unique<int>();
     DataStream *ds=new DataStream();
     Mytest1 mytest1(1,"123",Mytestin(1.23,"struct2"));
     TestClass *testClass=new TestClass();
     TestClass *testClass1=new TestClass();
-    testClass1->a=10;
     int at=8,at1;
+    testClass1->a=10;
     *ds<<testClass<<at;
     *ds>>testClass1>>at1;
     std::cout<<testClass1->a<<at1<<std::endl;
@@ -123,12 +121,19 @@ int main() {
     std::map<int,std::vector<std::string>> maptest,maptest1;
     maptest[0]=testvec;
   //  maptest[1]=testvec;
+    int c,d;
+    char ch='a',ch1;
+    float f=1.3,f1;
+    std::string e;
+    std::vector<std::string> v;
+
     std::cout << "Hello, World!" << std::endl;
     SThreadPool *threadPool=new SThreadPool();
     std::thread testthread(&SThreadPool::AddTasktest,threadPool);
     testthread.detach();
-    SrpcServer *srpcServer=new SrpcServer();
-    srpcServer->ServerStart();
+    SrpcServer *srpcserver=new SrpcServer();
+    threadPool->AddTaskToThread(&SrpcServer::ServerStart,srpcserver);
     threadPool->timer->m_timethread.join();
+    std::string aa="123456789";
     return 0;
 }

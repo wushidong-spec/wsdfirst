@@ -2,8 +2,6 @@
 // Created by LAD on 2023/11/19.
 //
 #include<iostream>
-#include<WinSock2.h>
-#include<Windows.h>
 #include<string>
 #include<vector>
 #include<ostream>
@@ -12,6 +10,7 @@
 #include<set>
 #include<map>
 #include<tuple>
+#include<string.h>
 #include<type_traits>
 #include<thread>
 #include<utility>

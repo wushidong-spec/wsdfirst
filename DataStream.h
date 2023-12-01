@@ -15,7 +15,7 @@ class StreamBuffer {
 public:
     StreamBuffer() { savebuffer = ""; };
     StreamBuffer(char* buffer,int len);
-    ~StreamBuffer() {};
+    ~StreamBuffer() {delete m_buffer;};
     long int Get_current_Pos();
     auto Add_stream_buf(char* buf, int len);
     void Get_stream_buf(char* buf, int len, bool special);
@@ -30,7 +30,7 @@ public:
     std::string savebuffer;
     char* m_buffer=new char[65535];
     std::atomic<int> m_currentsize=0;
-private:
+//private:
     std::atomic<int> m_position=0;
 };
 auto StreamBuffer::Add_stream_buf(char *buf, int len) {

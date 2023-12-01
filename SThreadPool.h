@@ -6,7 +6,8 @@
 #include <condition_variable>
 #include "STimer.h"
 #include <unistd.h>
-#include "server.h"
+#include "server.cpp"
+//#include "SRpcNetwork.h"
 #define MIN_THREADS 2
 
 struct TaskThread{
@@ -41,6 +42,7 @@ public:
     void ManageTask();
     std::atomic<int> currentworkingthreads;
     STimer *timer;
+    TcpServer *tcpServer=new TcpServer();
 };
 inline bool SThreadPool::CheckThreadId(std::thread::id threadid,bool isactive){
     for(int i=0;i<this->sworkthreads.size();i++) {
@@ -54,9 +56,9 @@ inline bool SThreadPool::CheckThreadId(std::thread::id threadid,bool isactive){
 void SThreadPool::AddTasktest() {
     int b=0;
     int a=0;
-    this->AddTaskToThread(mainserver);
+    this->AddTaskToThread(&TcpServer::mains,tcpServer);
     std::this_thread::sleep_for(std::chrono::milliseconds(600));
-    while (a<=0) {
+    while (a==0) {
         while (b < 16) {
             this->AddTaskToThread(&SThreadPool::test, this, 1);
             std::this_thread::sleep_for(std::chrono::milliseconds(600));
@@ -83,7 +85,6 @@ void SThreadPool::ManageTask() {
                 std::cout << "pop thread1" << workthread->workthread.native_handle()<<std::endl;
                 workthread=this->sworkthreads.erase(workthread);
                 std::this_thread::sleep_for(std::chrono::milliseconds(50));
-                //   std::cout << "pop thread1"<< std::endl;
             }else{
                 ++workthread;
             }

@@ -41,6 +41,7 @@ public:
 
 class FunctionHandler {
 public:
+    int clientsock;
     template<typename Func>
     void Bind(std::string funcname, Func func);
     template<typename Func, typename Class>
@@ -48,6 +49,8 @@ public:
     template<typename R,typename... Params>
     DataStream& Call(std::string funcname,Params... params);
     DataStream& FaCall(DataStream *ds, const char * data,int len);
+    template<typename R,typename... Params>
+    RValue<R> ClientCall(std::string funcname,Params... params);
     std::map < std::string, std::function<void(DataStream*, const char*, int)>> m_funcion;
     template<typename Func,typename Class>
     void CallProxy(Func func, Class* s,DataStream* ds, const char* data, int len);
@@ -64,12 +67,38 @@ public:
     template<typename R, typename Func, typename Tuple>
     typename std::enable_if<!std::is_same<R, void>::value, typename result_type<R>::type>::type ExcuteFunc(Func& func, Tuple& tuple);
 };
+template<typename R,typename... Params>
+RValue<R> FunctionHandler::ClientCall(std::string funcname,Params... params){
+    DataStream* ds=new DataStream();
+    *ds<<funcname;
+    ds->Write_args(params...);
+    std::cout<<"实际的socket:"<<this->clientsock<<std::endl;
+    send(this->clientsock,ds->streambuf->m_buffer,ds->streambuf->m_currentsize.load(),0);
+    RValue<R> result;
+    char *resultbytes=new char[1000];
+    int recvdatasize=0;
+    if((recvdatasize=recv(this->clientsock,resultbytes,1000,0))<=0){
+        result.errorcode=-1;
+        std::cout<<"接收失败!"<<std::endl;
+        return result;
+    }
+    ds->streambuf->Clear();
+    ds->streambuf->LoadData(resultbytes,recvdatasize);
+    *ds>>result;
+    delete[] resultbytes;
+    delete ds;
+    return result;
+}
 DataStream& FunctionHandler::FaCall(DataStream *ds, const char * data,int len){
     ds->streambuf->LoadData(const_cast<char*>(data),len);
     std::string funcname;
     *ds>>funcname;
+    std::cout<<"函数名"<<funcname<<std::endl;
     auto func = this->m_funcion[funcname];
-    func(ds,data,len);
+    int truelen=funcname.length()+sizeof(char)+sizeof(int);
+    char *argsbytes=new char[len-truelen+1];
+    memcpy(argsbytes,data+truelen,len-truelen);
+    func(ds,argsbytes,len-truelen);
     return *ds;
 }
 template<typename R,typename... Params>

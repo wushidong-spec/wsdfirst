@@ -46,7 +46,7 @@ inline void STimer::TaskProcess(int milliseconds) {
 inline void STimer::Start() {
     if(this->m_active.load()){
          this->m_timethread=std::thread(&STimer::TaskProcess,this,this->m_periord);
-       //  this->m_timethread.detach();
+//         this->m_timethread.detach();
     }
 }
 template<typename Func,typename Class,typename... Args>
