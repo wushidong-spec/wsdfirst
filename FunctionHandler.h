@@ -129,12 +129,12 @@ void FunctionHandler::CallProxy_(R(Class::* func)(Params...), DataStream* ds, S*
     using Arg_args = std::tuple<typename std::decay<Params>::type...>;
     DataStream *ds1=new DataStream();
     ds1->streambuf->LoadData(const_cast<char*>(data),len);
-    auto fafunc = [=](Params... params)->R {
+    auto fafuncion = [=](Params... params)->R {
         return (c->*func)(params...);
     };
     constexpr auto N = std::tuple_size<typename std::decay<Arg_args>::type>::value;
     Arg_args arg_types = ds1->Get_tuple<Arg_args>(std::make_index_sequence<N>{});
-    typename result_type<R>::type result = this->ExcuteFunc<R>(fafunc, arg_types);
+    typename result_type<R>::type result = this->ExcuteFunc<R>(fafuncion, arg_types);
     RValue<R> rvalue;
     rvalue.Set(result,"ok",true);
     ds->streambuf->Clear();

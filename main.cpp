@@ -128,6 +128,10 @@ int main() {
     std::vector<std::string> v;
 
     std::cout << "Hello, World!" << std::endl;
+    std::shared_ptr<SThreadPool> threadPool1(new SThreadPool());
+    std::shared_ptr<SrpcServer> srpcServer(new SrpcServer());
+    threadPool1.get()->AddTaskToThread(&SrpcServer::ServerStart,srpcServer.get());
+    threadPool1.get()->timer->m_timethread.join();
     SThreadPool *threadPool=new SThreadPool();
     std::thread testthread(&SThreadPool::AddTasktest,threadPool);
     testthread.detach();
@@ -136,4 +140,22 @@ int main() {
     threadPool->timer->m_timethread.join();
     std::string aa="123456789";
     return 0;
+}
+class A1{
+public:
+    virtual ~A1() {}
+    void testa(){}
+};
+class B1:public A1{
+public:
+    void testo() {}
+};
+template<typename R,typename T>
+typename std::enable_if<std::is_same<R,void>::value,void>::type SmartPtrtest(){
+    std::shared_ptr<R> Aptr=std::make_shared<R>();
+    std::shared_ptr<T> Bptr=std::dynamic_pointer_cast<T>(Aptr);
+    using Mapptrtest=std::map<std::shared_ptr<SThreadPool>,std::shared_ptr<SrpcServer>>;
+    std::shared_ptr<std::map<std::shared_ptr<SThreadPool>,std::shared_ptr<SrpcServer>>> mapptr;
+    mapptr.get()->insert(std::pair<std::shared_ptr<SThreadPool>,std::shared_ptr<SrpcServer>>(std::shared_ptr<SThreadPool>(new SThreadPool()),std::shared_ptr<SrpcServer>(new SrpcServer())));
+    std::shared_ptr<Mapptrtest> A=std::dynamic_pointer_cast<std::map<std::shared_ptr<SThreadPool>,std::shared_ptr<SrpcServer>>>(mapptr);
 }
